@@ -1,18 +1,5 @@
-# Project Name Ideas
-*Choose one of the following, or mix and match!*
-1. **OFLC Wage Explorer**
-2. **H-1B Wage Map** 
-3. **VisaWage**
-4. **WageTier**
-5. **Prevailing Geo**
-6. **OFLC Pulse**
-7. **Atlas US Wages**
-
----
-
-# [Your Chosen Project Name]
-
-A blazing-fast, interactive choropleth map for exploring U.S. Department of Labor (OFLC) prevailing wage data for H-1B, H-1B1, and E-3 visas. Built with React, MapLibre GL, and Vite, this tool empowers tech workers and employers to geographically visualize wage requirements across all 3,000+ U.S. counties.
+**OFLC Wage Map**
+An interactive choropleth map for exploring U.S. Department of Labor (OFLC) prevailing wage data for H-1B, H-1B1, and E-3 visas. Built with React, MapLibre GL, and Vite, this tool empowers tech workers and employers to geographically visualize wage requirements across all 3,000+ U.S. counties.
 
 Compare specific SOC (Standard Occupational Classification) codes against county-level data, or enter a personal salary to instantly determine what H-1B wage tier (Level I - IV) it legally qualifies for in any given region.
 
