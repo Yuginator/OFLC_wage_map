@@ -27,12 +27,12 @@ const apiMiddleware = () => ({
 
             try {
                 if (url.pathname === '/api/soc-index') {
-                    const modulePath = path.resolve(process.cwd(), './api/soc-index');
-                    const { default: handler } = await import(/* @vite-ignore */ modulePath + '.ts');
+                    const modulePath = path.resolve(process.cwd(), './api/soc-index.ts');
+                    const { default: handler } = await server.ssrLoadModule(modulePath);
                     await handler(req, res);
                 } else if (url.pathname === '/api/wages') {
-                    const modulePath = path.resolve(process.cwd(), './api/wages');
-                    const { default: handler } = await import(/* @vite-ignore */ modulePath + '.ts');
+                    const modulePath = path.resolve(process.cwd(), './api/wages.ts');
+                    const { default: handler } = await server.ssrLoadModule(modulePath);
                     await handler(req, res);
                 } else {
                     res.status(404).json({ error: 'Not found' });
