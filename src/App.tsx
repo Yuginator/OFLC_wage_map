@@ -48,6 +48,10 @@ const App: React.FC = () => {
                     console.error('Failed to load wages', err);
                     setLoading(false);
                 });
+        } else {
+            // Explicitly reset the map layers and selection when the user clears the SOC code
+            setWageData(null);
+            setSelectedFips(null);
         }
     }, [selectedSoc, collection]);
 
@@ -83,6 +87,7 @@ const App: React.FC = () => {
                 onWageLevelChange={setWageLevel}
                 personalSalary={personalSalary}
                 onPersonalSalaryChange={setPersonalSalary}
+                hasActiveSelection={!!selectedFips}
             />
 
             <div className="map-container">
