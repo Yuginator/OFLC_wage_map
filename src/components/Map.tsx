@@ -134,6 +134,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         );
 
         map.current.on('click', 'counties-fill', (e) => {
+            if (!wageDataRef.current) return; // Ignore clicks if no occupation is selected
             if (e.features && e.features.length > 0) {
                 const properties = e.features[0].properties || {};
                 const fips = properties.STATE && properties.COUNTY
