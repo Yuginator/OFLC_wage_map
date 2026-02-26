@@ -160,7 +160,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                 const countyGeo = props.COUNTY;
                 const fips = stateGeo && countyGeo ? `${stateGeo}${countyGeo}` : null;
 
-                let tooltipHTML = `<div style="font-weight: 500; font-size: 13px; color: white;">`;
+                let tooltipHTML = `<div style="font-weight: 500; font-size: 13px; color: var(--text);">`;
 
                 if (fips && wageDataRef.current) {
                     const cData = wageDataRef.current.data[fips];
@@ -197,22 +197,22 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                                     subtext = `Prevailing Wage is $${cData.level1.toLocaleString()}`;
                                 }
                                 tooltipHTML += `<div style="font-family: var(--font-mono); font-size: 13px; color: ${color}; margin-top: 4px;">${tierText}</div>`;
-                                tooltipHTML += `<div style="font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 2px;">${subtext}</div>`;
+                                tooltipHTML += `<div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 2px;">${subtext}</div>`;
                             } else {
-                                tooltipHTML += `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">No wage data</div>`;
+                                tooltipHTML += `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">No wage data</div>`;
                             }
                         } else {
                             if (typeof wagVal === 'number' && wagVal > 0) {
-                                tooltipHTML += `<div style="font-family: var(--font-mono); font-size: 13px; color: #60a5fa; margin-top: 4px;">Wage: $${wagVal.toLocaleString()}</div>`;
+                                tooltipHTML += `<div style="font-family: var(--font-mono); font-size: 13px; color: var(--primary); margin-top: 4px;">Wage: $${wagVal.toLocaleString()}</div>`;
                             } else {
-                                tooltipHTML += `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">No wage data</div>`;
+                                tooltipHTML += `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">No wage data</div>`;
                             }
                         }
                     } else {
-                        tooltipHTML += `${props.NAME}</div><div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">No matching data</div>`;
+                        tooltipHTML += `${props.NAME}</div><div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">No matching data</div>`;
                     }
                 } else {
-                    tooltipHTML += `${props.NAME}</div><div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">No wage data</div>`;
+                    tooltipHTML += `${props.NAME}</div><div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">No wage data</div>`;
                 }
 
                 tooltipPopup.setLngLat(e.lngLat).setHTML(tooltipHTML).addTo(map.current);
@@ -240,7 +240,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         const m = map.current;
         if (m.getStyle()) {
             m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#e2e8f0');
-            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)');
+            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.4)');
             m.setPaintProperty('states-outline', 'line-color', theme === 'dark' ? '#475569' : '#94a3b8');
             m.setPaintProperty('counties-labels', 'text-color', theme === 'dark' ? '#ffffff' : '#0f172a');
             m.setPaintProperty('counties-labels', 'text-halo-color', theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)');
@@ -297,6 +297,24 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             }
             matchExpr.push(0); // completely fallback wage is 0 if not matched
 
+            const lightGradient = [
+                scale.min, '#e0e7ff',   // Indigo 100
+                scale.min + (scale.max - scale.min) * 0.25, '#a5b4fc', // Indigo 300
+                scale.min + (scale.max - scale.min) * 0.5, '#6366f1', // Indigo 500
+                scale.min + (scale.max - scale.min) * 0.75, '#3730a3', // Indigo 800
+                scale.max, '#1e1b4b'   // Indigo 950
+            ];
+
+            const darkGradient = [
+                scale.min, '#f8fafc',
+                scale.min + (scale.max - scale.min) * 0.25, '#bae6fd',
+                scale.min + (scale.max - scale.min) * 0.5, '#3b82f6',
+                scale.min + (scale.max - scale.min) * 0.75, '#4338ca',
+                scale.max, '#312e81'
+            ];
+
+            const gradient = theme === 'dark' ? darkGradient : lightGradient;
+
             colorExpression = [
                 'case',
                 ['>', matchExpr, 0],
@@ -304,11 +322,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                     'interpolate',
                     ['linear'],
                     matchExpr,
-                    scale.min, theme === 'dark' ? '#f8fafc' : '#eff6ff',
-                    scale.min + (scale.max - scale.min) * 0.25, '#bae6fd',
-                    scale.min + (scale.max - scale.min) * 0.5, '#3b82f6',
-                    scale.min + (scale.max - scale.min) * 0.75, '#4338ca',
-                    scale.max, theme === 'dark' ? '#312e81' : '#1e3a8a'
+                    ...gradient
                 ],
                 emptyCountyHover // fallback when wage is 0/null
             ];
