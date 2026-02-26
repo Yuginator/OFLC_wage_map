@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SocItem } from '../types';
-import { Search, ChevronDown, ChevronUp, Check, X } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Check, X, Sun, Moon } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,6 +19,8 @@ interface ControlsProps {
     personalSalary: number | null;
     onPersonalSalaryChange: (s: number | null) => void;
     hasActiveSelection: boolean;
+    theme: 'dark' | 'light';
+    onThemeToggle: () => void;
 }
 
 const Controls: React.FC<ControlsProps> = ({
@@ -32,6 +34,8 @@ const Controls: React.FC<ControlsProps> = ({
     personalSalary,
     onPersonalSalaryChange,
     hasActiveSelection,
+    theme,
+    onThemeToggle,
 }) => {
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -66,14 +70,24 @@ const Controls: React.FC<ControlsProps> = ({
         <div className={cn("overlay-panel controls-panel", isCollapsed && "controls-collapsed")}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isCollapsed ? 0 : '0.5rem' }}>
                 <h1 className="text-xl font-bold tracking-tight" style={{ margin: 0 }}>OFLC Wage Search</h1>
-                <button
-                    className="text-muted hover:text-white transition-colors"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    title={isCollapsed ? "Expand panel" : "Collapse panel"}
-                    style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: '0.25rem' }}
-                >
-                    {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <button
+                        className="text-muted hover:text-white transition-colors"
+                        onClick={onThemeToggle}
+                        title={theme === 'dark' ? "Switch to Day mode" : "Switch to Night mode"}
+                        style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: '0.25rem' }}
+                    >
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    <button
+                        className="text-muted hover:text-white transition-colors"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        title={isCollapsed ? "Expand panel" : "Collapse panel"}
+                        style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: '0.25rem' }}
+                    >
+                        {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+                    </button>
+                </div>
             </div>
 
             {isCollapsed ? (

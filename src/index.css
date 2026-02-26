@@ -23,6 +23,26 @@
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 }
 
+:root[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-panel-hover: rgba(0, 0, 0, 0.04);
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-glow: rgba(79, 70, 229, 0.15);
+
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #cbd5e1;
+
+  --border: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(0, 0, 0, 0.2);
+
+  --shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -230,7 +250,7 @@ label {
 .loading-shade {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg-panel);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -419,12 +439,12 @@ label {
   margin-top: 0.5rem;
   z-index: 50;
   overflow: hidden;
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-panel);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow);
 }
 
 .search-dropdown-header {
@@ -603,8 +623,12 @@ label {
   background-color: var(--bg-panel-hover) !important;
 }
 
-.maplibregl-ctrl-icon {
+[data-theme="dark"] .maplibregl-ctrl-icon {
   filter: invert(0.85) hue-rotate(180deg) !important;
+}
+
+[data-theme="light"] .maplibregl-ctrl-icon {
+  filter: invert(0.15) hue-rotate(180deg) !important;
 }
 
 .maplibregl-ctrl-scale {

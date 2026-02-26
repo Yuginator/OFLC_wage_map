@@ -10,9 +10,10 @@ interface MapProps {
     selectedFips: string | null;
     onFipsSelect: (fips: string | null) => void;
     personalSalary: number | null;
+    theme: 'dark' | 'light';
 }
 
-const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary }) => {
+const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary, theme }) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const wageDataRef = useRef<WageResponse | null>(null);
@@ -144,6 +145,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             }
         });
 
+        // Use standard black tooltip background, but text colors adapt to CSS variables
         const tooltipPopup = new maplibregl.Popup({
             closeButton: false,
             closeOnClick: false,
@@ -232,11 +234,28 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         };
     }, []);
 
-    // Update coloring when data or level changes
+    // Effect for handling static base layer theme repaints (Background, Borders, Text)
+    useEffect(() => {
+        if (!map.current) return;
+        const m = map.current;
+        if (m.getStyle()) {
+            m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#e2e8f0');
+            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.1)');
+            m.setPaintProperty('states-outline', 'line-color', theme === 'dark' ? '#475569' : '#94a3b8');
+            m.setPaintProperty('counties-labels', 'text-color', theme === 'dark' ? '#ffffff' : '#0f172a');
+            m.setPaintProperty('counties-labels', 'text-halo-color', theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)');
+        }
+    }, [theme]);
+
+    // Update coloring when data, level, or theme changes
     useEffect(() => {
         if (!map.current || !wageData) return;
 
         const { data, scale } = wageData;
+
+        // Ensure missing fallback colors adhere to the current theme
+        const emptyCountyFill = theme === 'dark' ? '#1e293b' : '#f1f5f9';
+        const emptyCountyHover = theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)';
 
         const fipsExpr = ['concat', ['get', 'STATE'], ['get', 'COUNTY']];
         // MapLibre struggles with deeply nested object lookups when keys are missing (evaluates to null and crashes interpolate).
@@ -244,7 +263,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         let colorExpression: any;
 
         if (scale.min === scale.max || scale.max === 0) {
-            colorExpression = '#1e293b';
+            colorExpression = emptyCountyFill;
         } else if (personalSalary && personalSalary > 0) {
             const matchExpr: any[] = ['match', fipsExpr];
 
@@ -263,7 +282,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                     matchExpr.push(fips, color);
                 }
             }
-            matchExpr.push('rgba(255, 255, 255, 0.05)'); // Default missing
+            matchExpr.push(emptyCountyHover); // Default missing
             colorExpression = matchExpr;
 
         } else {
@@ -285,13 +304,13 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                     'interpolate',
                     ['linear'],
                     matchExpr,
-                    scale.min, '#f8fafc',
+                    scale.min, theme === 'dark' ? '#f8fafc' : '#eff6ff',
                     scale.min + (scale.max - scale.min) * 0.25, '#bae6fd',
                     scale.min + (scale.max - scale.min) * 0.5, '#3b82f6',
                     scale.min + (scale.max - scale.min) * 0.75, '#4338ca',
-                    scale.max, '#312e81'
+                    scale.max, theme === 'dark' ? '#312e81' : '#1e3a8a'
                 ],
-                'rgba(255, 255, 255, 0.05)' // fallback when wage is 0/null (renders as an ultra faint grey on black)
+                emptyCountyHover // fallback when wage is 0/null
             ];
         }
 
