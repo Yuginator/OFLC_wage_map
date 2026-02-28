@@ -102,15 +102,6 @@ body {
   padding-bottom: 1rem;
 }
 
-.details-panel {
-  top: 1.5rem;
-  right: 1.5rem;
-  width: 320px;
-  max-height: calc(100vh - 3rem);
-  overflow-y: auto;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
 @media (max-width: 768px) {
   .controls-panel {
     top: 1rem;
@@ -121,16 +112,6 @@ body {
 
   .controls-collapsed {
     padding: 0.75rem 1rem;
-  }
-
-  .details-panel {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    border-radius: var(--radius) var(--radius) 0 0;
-    max-height: 50vh;
   }
 }
 
@@ -332,36 +313,34 @@ label {
   z-index: 10;
 }
 
-.details-header {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.details-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-/* Linear table-like layout for data */
-.details-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-  padding: 0.25rem 0;
-}
-
-.details-row strong {
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.details-row span {
-  font-family: var(--font-mono);
+/* Map Click Popup Overrides */
+.map-click-popup .maplibregl-popup-content {
+  background: var(--bg-panel);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   color: var(--text);
-  font-weight: 400;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 240px;
+}
+
+.map-click-popup .maplibregl-popup-tip {
+  border-top-color: var(--border);
+  border-bottom-color: var(--border);
+}
+
+.map-click-popup .maplibregl-popup-close-button {
+  color: var(--text-muted);
+  font-size: 20px;
+  padding: 8px 10px;
+  transition: color 0.2s;
+}
+
+.map-click-popup .maplibregl-popup-close-button:hover {
+  color: var(--text);
+  background: transparent;
 }
 
 .legend-bar {

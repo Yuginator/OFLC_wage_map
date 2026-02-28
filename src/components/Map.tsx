@@ -11,14 +11,18 @@ interface MapProps {
     onFipsSelect: (fips: string | null) => void;
     personalSalary: number | null;
     theme: 'dark' | 'light';
+    meta?: any;
 }
 
-const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary, theme }) => {
+const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary, theme, meta }) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const wageDataRef = useRef<WageResponse | null>(null);
     const activeLevelRef = useRef(activeLevel);
     const personalSalaryRef = useRef(personalSalary);
+
+    const clickPopupRef = useRef<maplibregl.Popup | null>(null);
+    const activeFeatureRef = useRef<{ fips: string; properties: any; lngLat: maplibregl.LngLat } | null>(null);
 
     useEffect(() => {
         wageDataRef.current = wageData;
@@ -134,6 +138,17 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             'top-right'
         );
 
+        clickPopupRef.current = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            className: 'map-click-popup',
+            maxWidth: '320px'
+        });
+
+        clickPopupRef.current.on('close', () => {
+            onFipsSelect(null);
+        });
+
         map.current.on('click', 'counties-fill', (e) => {
             if (!wageDataRef.current) return; // Ignore clicks if no occupation is selected
             if (e.features && e.features.length > 0) {
@@ -141,7 +156,10 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                 const fips = properties.STATE && properties.COUNTY
                     ? `${properties.STATE}${properties.COUNTY}`
                     : undefined;
-                if (fips) onFipsSelect(fips);
+                if (fips) {
+                    activeFeatureRef.current = { fips, properties, lngLat: e.lngLat };
+                    onFipsSelect(fips);
+                }
             }
         });
 
@@ -228,11 +246,81 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         window.myMap = map.current; // Expose for debugging
 
         return () => {
+            clickPopupRef.current?.remove();
             map.current?.remove();
             // @ts-ignore
             window.myMap = null;
         };
     }, []);
+
+    // Effect for Rendering Click Popup
+    useEffect(() => {
+        if (!map.current || !clickPopupRef.current) return;
+
+        if (!selectedFips) {
+            clickPopupRef.current.remove();
+            activeFeatureRef.current = null;
+            return;
+        }
+
+        const featureContext = activeFeatureRef.current;
+        if (!wageData || !featureContext || featureContext.fips !== selectedFips) return;
+
+        const props = featureContext.properties;
+        const cData = wageData.data[selectedFips];
+        const ps = personalSalary;
+
+        let userTier: number | null = null;
+        if (ps && cData && cData.level1 > 0) {
+            if (ps >= cData.level4) userTier = 4;
+            else if (ps >= cData.level3) userTier = 3;
+            else if (ps >= cData.level2) userTier = 2;
+            else if (ps >= cData.level1) userTier = 1;
+            else userTier = 0;
+        }
+
+        const formatWage = (v: number) => `$${v.toLocaleString()}`;
+        // @ts-ignore dynamic key access
+        const activeWageNumeric = cData ? cData[activeLevel] : null;
+        const wageMetric = typeof activeWageNumeric === 'number' && activeWageNumeric > 0
+            ? formatWage(activeWageNumeric)
+            : '<span style="color: var(--text-muted); font-size: 14px; font-weight: normal;">No Data</span>';
+
+        const tierBadge = userTier !== null ? `
+            <div style="background: ${userTier === 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)'}; border: 1px solid ${userTier === 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)'}; border-radius: 6px; padding: 10px; margin-top: 14px;">
+                <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase;">Your Salary: ${formatWage(ps!)}</div>
+                <div style="font-size: 13px; font-weight: 500; color: ${userTier === 0 ? '#ef4444' : '#3b82f6'};">
+                    ${userTier === 4 ? 'Exceeds Level 4' : userTier === 3 ? 'Meets Level 3' : userTier === 2 ? 'Meets Level 2' : userTier === 1 ? 'Meets Level 1' : 'Fails Level 1 minimum requirement'}
+                </div>
+            </div>
+        ` : '';
+
+        const html = `
+            <div style="display: flex; flex-direction: column;">
+                <div style="font-size: 18px; font-weight: 600; padding-right: 20px; color: var(--text);">${cData ? cData.county : props.NAME + ' County'}</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">${cData ? cData.state : props.STATE}</div>
+                
+                <div style="font-size: 10px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.02em;">Occupation</div>
+                <div style="font-size: 13px; margin-bottom: 14px; line-height: 1.4; color: var(--text);">
+                    <span style="font-family: var(--font-mono); color: var(--primary); margin-right: 6px;">${meta?.soc}</span>
+                    ${meta?.soc_title}
+                </div>
+                
+                <div style="font-size: 10px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.02em;">Prevailing Wage (${activeLevel.replace('level', 'Level ').replace('average', 'Average')})</div>
+                <div style="font-size: 20px; font-family: var(--font-mono); font-weight: 600; color: var(--text);">
+                    ${wageMetric}
+                </div>
+                
+                ${tierBadge}
+            </div>
+        `;
+
+        clickPopupRef.current
+            .setLngLat(featureContext.lngLat)
+            .setHTML(html)
+            .addTo(map.current);
+
+    }, [selectedFips, wageData, activeLevel, personalSalary, theme, meta]);
 
     // Effect for handling static base layer theme repaints (Background, Borders, Text)
     useEffect(() => {

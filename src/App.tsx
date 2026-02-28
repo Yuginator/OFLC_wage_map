@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { SocItem, WageResponse } from './types';
 import MapView from './components/Map';
 import Controls from './components/Controls';
-import DetailsPanel from './components/DetailsPanel';
 import { Loader2, Search, ChevronDown, ChevronUp } from 'lucide-react';
 
 const getInitialState = () => {
@@ -87,7 +86,7 @@ const App: React.FC = () => {
     }, [selectedSoc, collection, wageLevel, personalSalary]);
 
     return (
-        <div className={`app-container ${selectedFips ? 'panel-open' : ''}`.trim()}>
+        <div className="app-container">
             <Controls
                 socs={socs}
                 selectedSoc={selectedSoc}
@@ -117,6 +116,7 @@ const App: React.FC = () => {
                     onFipsSelect={setSelectedFips}
                     personalSalary={personalSalary}
                     theme={theme}
+                    meta={wageData?.meta}
                 />
 
                 {!selectedSoc && (
@@ -151,16 +151,6 @@ const App: React.FC = () => {
                     Wages are defined by BLS statistical areas and may apply to multiple counties.
                 </div>
             </div>
-
-            {activeCountyData && (
-                <DetailsPanel
-                    fips={selectedFips!}
-                    data={activeCountyData}
-                    meta={wageData?.meta}
-                    personalSalary={personalSalary}
-                    onClose={() => setSelectedFips(null)}
-                />
-            )}
         </div>
     );
 };
