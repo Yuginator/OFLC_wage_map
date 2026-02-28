@@ -74,24 +74,6 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                         paint: {
                             'line-color': 'rgba(255,255,255,0.08)',
                         }
-                    },
-                    {
-                        id: 'counties-labels',
-                        type: 'symbol',
-                        source: 'counties',
-                        minzoom: 5,
-                        layout: {
-                            'text-field': '',
-                            'text-font': ['Open Sans Regular'], // Use exactly what the demotiles glyphs server provides
-                            'text-size': 12,
-                            'text-max-width': 8,
-                            'text-overlap': 'never', // Prevent dense cluster overlapping
-                        },
-                        paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': 'rgba(15, 23, 42, 0.8)', // slate-900 halo for readability against dark blue
-                            'text-halo-width': 1.5,
-                        }
                     }
                 ]
             },
@@ -355,8 +337,6 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         if (m.getStyle()) {
             m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#e2e8f0');
             m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)');
-            m.setPaintProperty('counties-labels', 'text-color', theme === 'dark' ? '#ffffff' : '#0f172a');
-            m.setPaintProperty('counties-labels', 'text-halo-color', theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)');
         }
     }, [theme]);
 
@@ -410,32 +390,29 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             }
             matchExpr.push(0); // completely fallback wage is 0 if not matched
 
-            const lightGradient = [
-                scale.min, '#e0e7ff',   // Indigo 100
-                scale.min + (scale.max - scale.min) * 0.25, '#a5b4fc', // Indigo 300
-                scale.min + (scale.max - scale.min) * 0.5, '#6366f1', // Indigo 500
-                scale.min + (scale.max - scale.min) * 0.75, '#3730a3', // Indigo 800
-                scale.max, '#1e1b4b'   // Indigo 950
-            ];
+            const range = scale.max - scale.min;
+            const q1 = scale.min + range * 0.2;
+            const q2 = scale.min + range * 0.4;
+            const q3 = scale.min + range * 0.6;
+            const q4 = scale.min + range * 0.8;
 
-            const darkGradient = [
-                scale.min, '#f8fafc',
-                scale.min + (scale.max - scale.min) * 0.25, '#bae6fd',
-                scale.min + (scale.max - scale.min) * 0.5, '#3b82f6',
-                scale.min + (scale.max - scale.min) * 0.75, '#4338ca',
-                scale.max, '#312e81'
-            ];
-
-            const gradient = theme === 'dark' ? darkGradient : lightGradient;
+            const c1 = theme === 'dark' ? '#f8fafc' : '#e0e7ff';
+            const c2 = theme === 'dark' ? '#bae6fd' : '#a5b4fc';
+            const c3 = theme === 'dark' ? '#3b82f6' : '#6366f1';
+            const c4 = theme === 'dark' ? '#4338ca' : '#3730a3';
+            const c5 = theme === 'dark' ? '#312e81' : '#1e1b4b';
 
             colorExpression = [
                 'case',
                 ['>', matchExpr, 0],
                 [
-                    'interpolate',
-                    ['linear'],
+                    'step',
                     matchExpr,
-                    ...gradient
+                    c1, // below q1
+                    q1, c2,
+                    q2, c3,
+                    q3, c4,
+                    q4, c5
                 ],
                 emptyCountyHover // fallback when wage is 0/null
             ];
@@ -443,40 +420,6 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
 
         if (map.current.getLayer('counties-fill')) {
             map.current.setPaintProperty('counties-fill', 'fill-color', colorExpression);
-        }
-
-        // Generate the text layout match expression mapping FIPS -> formatted text (e.g. "$105k")
-        // We only show labels for valid, non-zero wages.
-        const formatWageText = (wage: number) => {
-            if (wage >= 1000) {
-                return `$${Math.round(wage / 1000)}k`;
-            }
-            return `$${wage}`;
-        };
-
-        const textMatchExpr: any[] = ['match', fipsExpr];
-        for (const [fips, countyData] of Object.entries(data)) {
-            if (personalSalary && personalSalary > 0) {
-                if (countyData.level1 > 0) {
-                    let label = 'Fail';
-                    if (personalSalary >= countyData.level4) label = 'L4+';
-                    else if (personalSalary >= countyData.level3) label = 'L3';
-                    else if (personalSalary >= countyData.level2) label = 'L2';
-                    else if (personalSalary >= countyData.level1) label = 'L1';
-                    textMatchExpr.push(fips, label);
-                }
-            } else {
-                // @ts-ignore dynamic key access
-                const wage = countyData[activeLevel];
-                if (typeof wage === 'number' && wage > 0) {
-                    textMatchExpr.push(fips, formatWageText(wage));
-                }
-            }
-        }
-        textMatchExpr.push(''); // fallback empty string
-
-        if (map.current.getLayer('counties-labels')) {
-            map.current.setLayoutProperty('counties-labels', 'text-field', textMatchExpr);
         }
 
         // Highlight selected county

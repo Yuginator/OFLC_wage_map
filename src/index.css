@@ -21,6 +21,12 @@
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+  --q1: #f8fafc;
+  --q2: #bae6fd;
+  --q3: #3b82f6;
+  --q4: #4338ca;
+  --q5: #312e81;
 }
 
 :root[data-theme="light"] {
@@ -36,11 +42,16 @@
   --text-muted: #64748b;
   --text-faint: #cbd5e1;
 
-  --border: rgba(0, 0, 0, 0.1);
   --border-focus: rgba(0, 0, 0, 0.2);
 
   --shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  --q1: #e0e7ff;
+  --q2: #a5b4fc;
+  --q3: #6366f1;
+  --q4: #3730a3;
+  --q5: #1e1b4b;
 }
 
 * {
@@ -344,10 +355,36 @@ label {
 }
 
 .legend-bar {
-  height: 6px;
+  display: flex;
+  height: 8px;
   width: 200px;
-  background: linear-gradient(to right, #f8fafc, #bae6fd, #3b82f6, #4338ca, #312e81);
-  border-radius: 3px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+}
+
+.legend-bar>div {
+  flex: 1;
+}
+
+.legend-bar .q1 {
+  background: var(--q1);
+}
+
+.legend-bar .q2 {
+  background: var(--q2);
+}
+
+.legend-bar .q3 {
+  background: var(--q3);
+}
+
+.legend-bar .q4 {
+  background: var(--q4);
+}
+
+.legend-bar .q5 {
+  background: var(--q5);
 }
 
 .legend-labels {

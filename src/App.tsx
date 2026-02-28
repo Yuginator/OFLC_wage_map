@@ -137,7 +137,13 @@ const App: React.FC = () => {
                         </div>
                         {legendOpen && (
                             <>
-                                <div className="legend-bar"></div>
+                                <div className="legend-bar">
+                                    <div className="q1"></div>
+                                    <div className="q2"></div>
+                                    <div className="q3"></div>
+                                    <div className="q4"></div>
+                                    <div className="q5"></div>
+                                </div>
                                 <div className="legend-labels">
                                     <span>${wageData.scale.min.toLocaleString()}</span>
                                     <span>${wageData.scale.max.toLocaleString()}</span>
