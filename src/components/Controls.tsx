@@ -206,21 +206,29 @@ const Controls: React.FC<ControlsProps> = ({
                                 </button>
                             ))}
                         </div>
-                        {scale && (
-                            <div style={{ marginTop: '0.5rem', padding: '0 4px' }}>
-                                <div className="legend-bar">
-                                    <div className="q1"></div>
-                                    <div className="q2"></div>
-                                    <div className="q3"></div>
-                                    <div className="q4"></div>
-                                    <div className="q5"></div>
+                        {scale && (() => {
+                            const range = scale.max - scale.min;
+                            const formatK = (v: number) => v >= 1000 ? `${Math.round(v / 1000)}k` : v.toLocaleString();
+                            return (
+                                <div style={{ marginTop: '0.5rem', padding: '0 4px' }}>
+                                    <div className="legend-bar">
+                                        <div className="q1"></div>
+                                        <div className="q2"></div>
+                                        <div className="q3"></div>
+                                        <div className="q4"></div>
+                                        <div className="q5"></div>
+                                    </div>
+                                    <div style={{ fontSize: '0.65rem', position: 'relative', height: '1rem', marginTop: '4px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                                        <span style={{ position: 'absolute', left: '0%' }}>${formatK(scale.min)}</span>
+                                        <span style={{ position: 'absolute', left: '20%', transform: 'translateX(-50%)' }}>${formatK(scale.min + range * 0.2)}</span>
+                                        <span style={{ position: 'absolute', left: '40%', transform: 'translateX(-50%)' }}>${formatK(scale.min + range * 0.4)}</span>
+                                        <span style={{ position: 'absolute', left: '60%', transform: 'translateX(-50%)' }}>${formatK(scale.min + range * 0.6)}</span>
+                                        <span style={{ position: 'absolute', left: '80%', transform: 'translateX(-50%)' }}>${formatK(scale.min + range * 0.8)}</span>
+                                        <span style={{ position: 'absolute', right: '0%' }}>${formatK(scale.max)}</span>
+                                    </div>
                                 </div>
-                                <div className="legend-labels" style={{ fontSize: '0.75rem' }}>
-                                    <span>${scale.min.toLocaleString()}</span>
-                                    <span>${scale.max.toLocaleString()}</span>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                     <div className="input-group">
                         <label>Compare Personal Salary (Optional)</label>
