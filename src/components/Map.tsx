@@ -353,8 +353,8 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         if (!map.current) return;
         const m = map.current;
         if (m && m.getStyle()) {
-            m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#e2e8f0');
-            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)');
+            m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#f8fafc');
+            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 23, 42, 0.12)');
 
             if (m.getLayer('counties-labels')) {
                 m.setPaintProperty('counties-labels', 'text-color', theme === 'dark' ? '#ffffff' : '#0f172a');
@@ -370,8 +370,8 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         const { data, scale } = wageData;
 
         // Ensure missing fallback colors adhere to the current theme
-        const emptyCountyFill = theme === 'dark' ? '#1e293b' : '#f1f5f9';
-        const emptyCountyHover = theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)';
+        const emptyCountyFill = theme === 'dark' ? '#1e293b' : '#e2e8f0';
+        const emptyCountyHover = theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.05)';
 
         const fipsExpr = ['concat', ['get', 'STATE'], ['get', 'COUNTY']];
         // MapLibre struggles with deeply nested object lookups when keys are missing (evaluates to null and crashes interpolate).
@@ -419,9 +419,9 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             const q3 = scale.min + range * 0.6;
             const q4 = scale.min + range * 0.8;
 
-            const c1 = theme === 'dark' ? '#f8fafc' : '#e0e7ff';
-            const c2 = theme === 'dark' ? '#bae6fd' : '#a5b4fc';
-            const c3 = theme === 'dark' ? '#3b82f6' : '#6366f1';
+            const c1 = theme === 'dark' ? '#f8fafc' : '#c7d2fe';
+            const c2 = theme === 'dark' ? '#bae6fd' : '#818cf8';
+            const c3 = theme === 'dark' ? '#3b82f6' : '#4f46e5';
             const c4 = theme === 'dark' ? '#4338ca' : '#3730a3';
             const c5 = theme === 'dark' ? '#312e81' : '#1e1b4b';
 
