@@ -26,17 +26,6 @@ const App: React.FC = () => {
     const [selectedFips, setSelectedFips] = useState<string | null>(null);
     const [personalSalary, setPersonalSalary] = useState<number | null>(init.salary);
     const [legendOpen, setLegendOpen] = useState(true);
-    const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-        if (typeof window !== 'undefined') {
-            return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
-        }
-        return 'dark';
-    });
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
 
     useEffect(() => {
         fetch('/api/soc-index')
@@ -98,8 +87,6 @@ const App: React.FC = () => {
                 personalSalary={personalSalary}
                 onPersonalSalaryChange={setPersonalSalary}
                 hasActiveSelection={activeCountyData ? true : false}
-                theme={theme}
-                onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 scale={wageData?.scale}
             />
 
@@ -116,7 +103,6 @@ const App: React.FC = () => {
                     selectedFips={selectedFips}
                     onFipsSelect={setSelectedFips}
                     personalSalary={personalSalary}
-                    theme={theme}
                     meta={wageData?.meta}
                 />
 

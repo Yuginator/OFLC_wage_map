@@ -10,11 +10,10 @@ interface MapProps {
     selectedFips: string | null;
     onFipsSelect: (fips: string | null) => void;
     personalSalary: number | null;
-    theme: 'dark' | 'light';
     meta?: any;
 }
 
-const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary, theme, meta }) => {
+const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFipsSelect, personalSalary, meta }) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const map = useRef<maplibregl.Map | null>(null);
     const wageDataRef = useRef<WageResponse | null>(null);
@@ -41,65 +40,78 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
 
         map.current = new maplibregl.Map({
             container: mapContainer.current,
-            style: {
-                version: 8,
-                glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-                sources: {
-                    'counties': {
-                        type: 'geojson',
-                        data: '/geo/us-counties.json', // We'll need a GeoJSON version or TopoJSON-to-GeoJSON convert
-                        generateId: true
-                    }
-                },
-                layers: [
-                    {
-                        id: 'background',
-                        type: 'background',
-                        paint: { 'background-color': theme === 'dark' ? '#000000' : '#f8fafc' }
-                    },
-                    {
-                        id: 'counties-fill',
-                        type: 'fill',
-                        source: 'counties',
-                        paint: {
-                            'fill-color': theme === 'dark' ? '#1e293b' : '#e2e8f0',
-                            'fill-opacity': 0.8,
-                            'fill-color-transition': { duration: 500 }
-                        }
-                    },
-                    {
-                        id: 'counties-outline',
-                        type: 'line',
-                        source: 'counties',
-                        paint: {
-                            'line-color': theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 23, 42, 0.12)',
-                        }
-                    },
-                    {
-                        id: 'counties-labels',
-                        type: 'symbol',
-                        source: 'counties',
-                        minzoom: 5,
-                        layout: {
-                            'text-field': '',
-                            'text-font': ['Open Sans Regular'], // Use exactly what the demotiles glyphs server provides
-                            'text-size': 12,
-                            'text-max-width': 8,
-                            'text-overlap': 'never', // Prevent dense cluster overlapping
-                        },
-                        paint: {
-                            'text-color': theme === 'dark' ? '#ffffff' : '#0f172a',
-                            'text-halo-color': theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)', // slate-900 halo for readability against dark blue
-                            'text-halo-width': 1.5,
-                        }
-                    }
-                ]
-            },
+            style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
             center: [-98.5795, 39.8283],
             zoom: 3.5,
             pitch: 0,
             hash: true, // Enables native URL syncing for center/zoom/pitch/bearing
             attributionControl: false // Removes MapLibre logo footprint
+        });
+
+        // Add layers after base MapLibre style loads completely
+        map.current.on('load', () => {
+            if (!map.current) return;
+
+            map.current.addSource('counties', {
+                type: 'geojson',
+                data: '/geo/us-counties.json',
+                generateId: true
+            });
+
+            // Find the first symbol layer to insert geojson polygons underneath so city labels sit gracefully on top of heatmap
+            const layers = map.current.getStyle()?.layers || [];
+            let firstSymbolId: string | undefined;
+            for (let i = 0; i < layers.length; i++) {
+                if (layers[i].type === 'symbol') {
+                    firstSymbolId = layers[i].id;
+                    break;
+                }
+            }
+
+            map.current.addLayer({
+                id: 'counties-fill',
+                type: 'fill',
+                source: 'counties',
+                paint: {
+                    'fill-color': '#e2e8f0', // Tailwind slate-200 default empty
+                    'fill-opacity': 0.75, // Allow base map texture to show through
+                    'fill-color-transition': { duration: 500 }
+                }
+            }, firstSymbolId || undefined);
+
+            map.current.addLayer({
+                id: 'counties-outline',
+                type: 'line',
+                source: 'counties',
+                paint: {
+                    'line-color': 'rgba(255,255,255,0.7)',
+                    'line-width': 0.5
+                }
+            }, firstSymbolId || undefined);
+
+            map.current.addLayer({
+                id: 'counties-labels',
+                type: 'symbol',
+                source: 'counties',
+                minzoom: 5,
+                layout: {
+                    'text-field': '',
+                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                    'text-size': 12,
+                    'text-max-width': 8,
+                    'text-overlap': 'never',
+                },
+                paint: {
+                    'text-color': '#0f172a',
+                    'text-halo-color': 'rgba(255, 255, 255, 0.9)',
+                    'text-halo-width': 2,
+                }
+            });
+
+            // Trigger an initial refresh of map colors just in case wageData loaded before map was ready
+            if (wageDataRef.current) {
+                activeLevelRef.current = activeLevel; // Force hack update
+            }
         });
 
         // Add native Map Navigation Controls (Zoom & Pitch)
@@ -346,22 +358,9 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             .setHTML(html)
             .addTo(map.current);
 
-    }, [selectedFips, wageData, activeLevel, personalSalary, theme, meta]);
+    }, [selectedFips, wageData, activeLevel, personalSalary, meta]);
 
-    // Effect for handling static base layer theme repaints (Background, Borders, Text)
-    useEffect(() => {
-        if (!map.current) return;
-        const m = map.current;
-        if (m && m.getStyle()) {
-            m.setPaintProperty('background', 'background-color', theme === 'dark' ? '#000000' : '#f8fafc');
-            m.setPaintProperty('counties-outline', 'line-color', theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 23, 42, 0.12)');
-
-            if (m.getLayer('counties-labels')) {
-                m.setPaintProperty('counties-labels', 'text-color', theme === 'dark' ? '#ffffff' : '#0f172a');
-                m.setPaintProperty('counties-labels', 'text-halo-color', theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)');
-            }
-        }
-    }, [theme]);
+    // (The previous background/border theme-toggling repaint effect has been removed since the base map is now permanently Positron Light)
 
     // Update coloring when data, level, or theme changes
     useEffect(() => {
@@ -370,8 +369,8 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
         const { data, scale } = wageData;
 
         // Ensure missing fallback colors adhere to the current theme
-        const emptyCountyFill = theme === 'dark' ? '#1e293b' : '#e2e8f0';
-        const emptyCountyHover = theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(15, 23, 42, 0.05)';
+        const emptyCountyFill = '#e2e8f0';
+        const emptyCountyHover = 'rgba(15, 23, 42, 0.05)';
 
         const fipsExpr = ['concat', ['get', 'STATE'], ['get', 'COUNTY']];
         // MapLibre struggles with deeply nested object lookups when keys are missing (evaluates to null and crashes interpolate).
@@ -419,11 +418,11 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             const q3 = scale.min + range * 0.6;
             const q4 = scale.min + range * 0.8;
 
-            const c1 = theme === 'dark' ? '#1e1b4b' : '#c7d2fe';
-            const c2 = theme === 'dark' ? '#312e81' : '#818cf8';
-            const c3 = theme === 'dark' ? '#4338ca' : '#4f46e5';
-            const c4 = theme === 'dark' ? '#3b82f6' : '#3730a3';
-            const c5 = theme === 'dark' ? '#60a5fa' : '#1e1b4b';
+            const c1 = '#3b82f6'; // Blue
+            const c2 = '#4ade80'; // Green
+            const c3 = '#60a5fa'; // Light Blue
+            const c4 = '#fbbf24'; // Yellow
+            const c5 = '#ef4444'; // Red
 
             colorExpression = [
                 'case',
