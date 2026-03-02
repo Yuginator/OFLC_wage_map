@@ -55,14 +55,14 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                     {
                         id: 'background',
                         type: 'background',
-                        paint: { 'background-color': '#000000' }
+                        paint: { 'background-color': theme === 'dark' ? '#000000' : '#f8fafc' }
                     },
                     {
                         id: 'counties-fill',
                         type: 'fill',
                         source: 'counties',
                         paint: {
-                            'fill-color': '#1e293b',
+                            'fill-color': theme === 'dark' ? '#1e293b' : '#e2e8f0',
                             'fill-opacity': 0.8,
                             'fill-color-transition': { duration: 500 }
                         }
@@ -72,7 +72,7 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                         type: 'line',
                         source: 'counties',
                         paint: {
-                            'line-color': 'rgba(255,255,255,0.08)',
+                            'line-color': theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(15, 23, 42, 0.12)',
                         }
                     },
                     {
@@ -88,8 +88,8 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
                             'text-overlap': 'never', // Prevent dense cluster overlapping
                         },
                         paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': 'rgba(15, 23, 42, 0.8)', // slate-900 halo for readability against dark blue
+                            'text-color': theme === 'dark' ? '#ffffff' : '#0f172a',
+                            'text-halo-color': theme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)', // slate-900 halo for readability against dark blue
                             'text-halo-width': 1.5,
                         }
                     }
