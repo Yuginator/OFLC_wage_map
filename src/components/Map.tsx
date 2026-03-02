@@ -419,11 +419,11 @@ const MapView: React.FC<MapProps> = ({ wageData, activeLevel, selectedFips, onFi
             const q3 = scale.min + range * 0.6;
             const q4 = scale.min + range * 0.8;
 
-            const c1 = theme === 'dark' ? '#f8fafc' : '#c7d2fe';
-            const c2 = theme === 'dark' ? '#bae6fd' : '#818cf8';
-            const c3 = theme === 'dark' ? '#3b82f6' : '#4f46e5';
-            const c4 = theme === 'dark' ? '#4338ca' : '#3730a3';
-            const c5 = theme === 'dark' ? '#312e81' : '#1e1b4b';
+            const c1 = theme === 'dark' ? '#1e1b4b' : '#c7d2fe';
+            const c2 = theme === 'dark' ? '#312e81' : '#818cf8';
+            const c3 = theme === 'dark' ? '#4338ca' : '#4f46e5';
+            const c4 = theme === 'dark' ? '#3b82f6' : '#3730a3';
+            const c5 = theme === 'dark' ? '#60a5fa' : '#1e1b4b';
 
             colorExpression = [
                 'case',

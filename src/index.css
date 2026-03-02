@@ -22,11 +22,11 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-  --q1: #f8fafc;
-  --q2: #bae6fd;
-  --q3: #3b82f6;
-  --q4: #4338ca;
-  --q5: #312e81;
+  --q1: #1e1b4b;
+  --q2: #312e81;
+  --q3: #4338ca;
+  --q4: #3b82f6;
+  --q5: #60a5fa;
 }
 
 :root[data-theme="light"] {
